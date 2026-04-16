@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background: #f6f8fc; color: #1f2937; }
+    h1 { margin-bottom: 16px; }
+    .row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    input, button { padding: 9px 12px; border-radius: 8px; border: 1px solid #cbd5e1; }
+    button { cursor: pointer; }
+    #clear { background: #b91c1c; color: white; border: none; }
+    .card { background: white; border: 1px solid #dbe3ef; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+    .del { background: #ef4444; color: white; border: none; margin-top: 8px; }
+    .muted { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>Submitted Messages</h1>
+  <div class="row">
+    <input id="key" type="password" placeholder="Admin key (infinity)">
+    <button id="load">Load Messages</button>
+    <button id="clear">Clear All Messages</button>
+  </div>
+  <p class="muted">This page runs on Live Server and reads data from <code>http://localhost:3000</code>.</p>
+  <div id="list"></div>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+    const keyEl = document.getElementById("key");
+    const listEl = document.getElementById("list");
+
+    async function loadMessages() {
+      const key = keyEl.value.trim();
+      if (!key) {
+        alert("Enter admin key first.");
+        return;
+      }
+
+      const resp = await fetch(`${API_BASE}/api/messages?key=${encodeURIComponent(key)}`);
+      if (!resp.ok) {
+        alert("Failed to load messages. Check key or server.");
+        return;
+      }
+
+      const data = await resp.json();
+      render(data, key);
+    }
+
+    function render(items, key) {
+      if (!items.length) {
+        listEl.innerHTML = "<p>No messages yet.</p>";
+        return;
+      }
+
+      listEl.innerHTML = items.map((item, index) => `
+        <article class="card">
+          <p><strong>${index + 1}. ${escapeHtml(item.name || "")}</strong> (${escapeHtml(item.email || "")})</p>
+          <p><strong>Project Type:</strong> ${escapeHtml(item.projectType || "")}</p>
+          <p><strong>Budget:</strong> ${escapeHtml(item.budget || "")}</p>
+          <p><strong>Timeline:</strong> ${escapeHtml(item.timeline || "")}</p>
+          <p><strong>Goals:</strong> ${escapeHtml(item.goals || "")}</p>
+          <p><strong>Message:</strong> ${escapeHtml(item.message || "")}</p>
+          <small>Submitted: ${escapeHtml(item.submittedAt || "")}</small><br>
+          <button class="del" data-index="${index}" data-key="${escapeHtml(key)}">Delete Message</button>
+        </article>
+      `).join("");
+    }
+
+    async function deleteMessage(index, key) {
+      const body = new URLSearchParams({ index: String(index) });
+      const resp = await fetch(`${API_BASE}/messages/delete?key=${encodeURIComponent(key)}`, {
+        method: "POST",
+        headers: { "Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body
+      });
+      if (!resp.ok) {
+        alert("Delete failed.");
+        return;
+      }
+      loadMessages();
+    }
+
+    async function clearAll() {
+      const key = keyEl.value.trim();
+      if (!key) {
+        alert("Enter admin key first.");
+        return;
+      }
+      const ok = window.confirm("Clear all messages?");
+      if (!ok) return;
+
+      const resp = await fetch(`${API_BASE}/messages/clear?key=${encodeURIComponent(key)}`, {
+        method: "POST",
+        headers: { "Accept": "application/json" }
+      });
+      if (!resp.ok) {
+        alert("Clear all failed.");
+        return;
+      }
+      loadMessages();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    document.getElementById("load").addEventListener("click", loadMessages);
+    document.getElementById("clear").addEventListener("click", clearAll);
+    listEl.addEventListener("click", (event) => {
+      const btn = event.target.closest(".del");
+      if (!btn) return;
+      deleteMessage(btn.dataset.index, btn.dataset.key);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="page-wrap">
+    <section class="form-shell">
+      <p class="kicker">Let's Build Something Great</p>
+      <h1>Contact Form</h1>
+      <p class="lead">Share your idea in a few quick answers. I will review and reply with next steps.</p>
+
+      <div id="success-banner" class="success-banner" hidden>
+        Message sent successfully. Thank you.
+      </div>
+
+      <form action="http://localhost:3000/contact" method="POST" class="contact-form">
+        <label for="name">1. What should I call you?</label>
+        <input id="name" name="name" type="text" placeholder="Your full name" required>
+
+        <label for="email">2. What is your email address?</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+        <label for="projectType">3. What do you need?</label>
+        <select id="projectType" name="projectType" required>
+          <option value="" disabled selected>Select one</option>
+          <option>Portfolio Website</option>
+          <option>Business Website</option>
+          <option>Landing Page</option>
+          <option>Contact Form Setup</option>
+          <option>Other</option>
+        </select>
+
+        <label for="budget">4. Budget range?</label>
+        <select id="budget" name="budget" required>
+          <option value="" disabled selected>Select one</option>
+          <option>Under $250</option>
+          <option>$250 - $500</option>
+          <option>$500 - $1000</option>
+          <option>$1000+</option>
+        </select>
+
+        <label for="timeline">5. Preferred timeline?</label>
+        <select id="timeline" name="timeline" required>
+          <option value="" disabled selected>Select one</option>
+          <option>ASAP (1 week)</option>
+          <option>2-3 weeks</option>
+          <option>1-2 months</option>
+          <option>Flexible</option>
+        </select>
+
+        <label for="goals">6. What is your main goal?</label>
+        <textarea id="goals" name="goals" rows="3" placeholder="Get more leads, improve brand, launch product..." required></textarea>
+
+        <label for="message">7. Any extra details?</label>
+        <textarea id="message" name="message" rows="4" placeholder="Tell me anything important about your project" required></textarea>
+
+        <button type="submit">Send Message</button>
+      </form>
+
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('submitted') === '1') {
+      const banner = document.getElementById('success-banner');
+      banner.hidden = false;
+      window.history.replaceState({}, '', '/');
+    }
+  </script>
+</body>
+</html>
+
